@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT ZEUS</title>
+    
+    <link rel="icon" href="https://zeus-rr.github.io/osint/simbolo.ico" type="image/x-icon">
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" />
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root { 
+            --bg: #0f172a; 
+            --card: #1e293b; 
+            --accent: #3b82f6; 
+            --text: #e2e8f0; 
+            --danger: #ef4444; 
+            --success: #10b981; 
+        }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            font-family: 'Inter', sans-serif; 
+            overflow-x: hidden; 
+            padding-bottom: 30px;
+        }
+
+        .card { 
+            background: var(--card); 
+            border: 1px solid #334155; 
+            border-radius: 12px; 
+            transition: 0.3s; 
+            margin-bottom: 20px;
+        }
+
+        .progress { height: 6px; background-color: #334155; display: none; margin-bottom: 20px; border-radius: 10px; }
+        .progress-bar { background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
+        
+        .btn-osint {
+            width: 100%; background: #0f172a; border: 1px solid #334155; color: #94a3b8;
+            padding: 10px 14px; border-radius: 8px; font-size: 12px; text-align: left;
+            transition: 0.2s; margin-bottom: 6px; display: flex; align-items: center; gap: 10px;
+        }
+        
+        .btn-osint:hover { 
+            background: #3b82f622; 
+            color: white; 
+            border-color: var(--accent); 
+            transform: translateX(5px); 
+        }
+
+        #targetUsername { 
+            background: #0f172a; 
+            color: var(--accent); 
+            border: 1px solid #334155; 
+            font-weight: 600; 
+        }
+
+        @media (max-width: 576px) {
+            .input-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .input-group > .form-control {
+                width: 100% !important;
+                border-radius: 8px !important;
+                height: 55px;
+                font-size: 16px !important;
+            }
+            .input-group-append .btn {
+                width: 100%;
+                border-radius: 8px !important;
+                height: 50px;
+            }
+        }
+
+        .section-title { 
+            font-size: 10px; font-weight: 800; text-transform: uppercase; 
+            color: #64748b; letter-spacing: 1px; margin: 15px 0 8px 5px;
+        }
+
+        table.dataTable { background: var(--card) !important; color: white !important; }
+        .dataTables_wrapper .dataTables_filter input { color: white; border: 1px solid #334155; background: #0f172a; border-radius: 4px; }
+        .badge-cat { font-size: 10px; padding: 4px 8px; border-radius: 20px; background: #334155; }
+        .alert-popup { font-size: 11px; background: #3b82f622; border: 1px dashed var(--accent); color: #94a3b8; border-radius: 8px; padding: 10px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-12 col-md-4 col-lg-3">
+            <div class="card p-3 shadow-lg">
+                <div class="text-center mb-3">
+                    <img src="https://zeus-rr.github.io/osint/simbolo.ico" alt="Logo" class="mb-2" style="width: 50px; height: 50px; object-fit: contain;">
+                    <h6 class="text-white font-weight-bold">OSINT OPINFO</h6>
+                </div>
+                
+                <p class="section-title text-info">Criminal & Judicial</p>
+                <button onclick="quickSearch('jusbrasil')" class="btn-osint"><i data-lucide="gavel"></i> JusBrasil</button>
+                <button onclick="quickSearch('escavador')" class="btn-osint"><i data-lucide="search"></i> Escavador</button>
+                
+                <p class="section-title text-warning">Análise de Sentimento</p>
+                <button onclick="sentimentSearch('pos')" class="btn-osint text-success"><i data-lucide="trending-up"></i> Favoráveis</button>
+                <button onclick="sentimentSearch('neg')" class="btn-osint text-danger"><i data-lucide="trending-down"></i> Desfavoráveis</button>
+                <button onclick="sentimentSearch('total')" class="btn-osint text-danger"><i data-lucide="trending-right"></i> Todas Noticias</button>
+		
+                <p class="section-title text-primary">Redes Sociais</p>
+                <button onclick="quickSearch('images')" class="btn-osint"><i data-lucide="image"></i> Imagens</button>
+                <button onclick="quickSearch('linkedin')" class="btn-osint"><i data-lucide="linkedin"></i> LinkedIn</button>
+                <button onclick="quickSearch('social_all')" class="btn-osint"><i data-lucide="share-2"></i> Pegada Total</button>
+                <button onclick="quickSearch('facebook')" class="btn-osint"><i data-lucide="facebook"></i> Facebook</button>
+                <button onclick="quickSearch('instagram')" class="btn-osint"><i data-lucide="instagram"></i> Instagram</button>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-9">
+            <div class="card p-3 p-md-4 shadow-lg">
+                <div class="alert-popup">
+                    <i data-lucide="info" class="mr-2" style="width:14px"></i> 
+                    <strong>Dica:</strong> Habilite pop-ups no navegador para melhor funcionamento da varredura.
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4">
+                    <h4 class="mb-2 mb-sm-0 font-weight-bold"><i data-lucide="activity" class="mr-2"></i>Painel de Inteligência</h4>
+                    <button class="btn btn-outline-danger btn-sm" id="btnExport" onclick="exportToPDF()" style="display:none">
+                        <i class="fa fa-file-pdf-o mr-1"></i> Gerar Relatório PDF
+                    </button>
+                </div>
+
+                <div class="input-group mb-4">
+                    <input type="text" class="form-control form-control-lg" id="targetUsername" placeholder="Nome, CPF, CNPJ ou Usuário...">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary px-4" id="btnScan" onclick="startAutomatedScan()">
+                            <i class="fa fa-rocket mr-2"></i>VARREDURA MULTI-JANELA
+                        </button>
+                    </div>
+                </div>
+
+                <div class="progress" id="scanProgress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="collectiontable" class="table table-dark table-hover w-100" style="min-width: 600px;">
+                        <thead>
+                            <tr>
+                                <th>Fonte</th>
+                                <th>Categoria</th>
+                                <th>Status</th>
+                                <th>Link Direto</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+
+<script>
+    // Inicializa ícones Lucide
+    lucide.createIcons();
+
+    const table = $('#collectiontable').DataTable({ 
+        paging: false, 
+        info: false,
+        searching: true,
+        language: { search: "Filtrar resultados:" }
+    });
+
+    const osintEngines = [
+        { name: 'Documentos (PDF)', cat: 'Vazamentos', url: 'https://www.google.com/search?q="{}"+filetype:pdf' },
+        { name: 'Planilhas (XLS/CSV)', cat: 'Vazamentos', url: 'https://www.google.com/search?q="{}"+(filetype:xls+OR+filetype:csv)' },
+        { name: 'JusBrasil', cat: 'Judicial', url: 'https://www.jusbrasil.com.br/busca?q={}' },
+        { name: 'Escavador', cat: 'Judicial', url: 'https://www.escavador.com/busca?q={}' },
+        { name: 'G1', cat: 'Notícias', url: 'https://g1.globo.com/busca/?q={}' },
+        { name: 'Notícias Favoráveis', cat: 'Reputação', url: 'https://www.google.com/search?q="{}"+(vitoria+OR+conquista+OR+premio+OR+sucesso+OR+homenagem)' },
+        { name: 'Notícias Desfavoráveis', cat: 'Risco', url: 'https://www.google.com/search?q="{}"+(crime+OR+processo+OR+fraude+OR+escandalo)' },
+        { name: 'Instagram', cat: 'Social', url: 'https://www.google.com/search?q=site:instagram.com "{}"' },
+        { name: 'LinkedIn', cat: 'Social', url: 'https://www.linkedin.com/search/results/all/?keywords={}' },
+        { name: 'Facebook', cat: 'Social', url: 'https://www.google.com/search?q=site:facebook.com "{}"' },
+        { name: 'Twitter / X', cat: 'Social', url: 'https://twitter.com/search?q="{}"&f=user' },
+        { name: 'Diário Oficial', cat: 'Governo', url: 'https://www.in.gov.br/consulta/-/buscar/dou?q=+{}' },
+        { name: 'Portal da Transparência', cat: 'Governo', url: 'https://www.portaltransparencia.gov.br/busca?termo={}' },
+        { name: 'CPF (Dork)', cat: 'Identidade', url: 'https://www.google.com/search?q="{}"+cpf' },
+        { name: 'CNPJ (Dork)', cat: 'Empresarial', url: 'https://www.google.com/search?q="{}"+cnpj' },
+		{ name: 'ENDEREÇO', cat: 'Endereço', url: 'https://tudosobretodos.info/{}' },
+        { name: 'Google Imagens', cat: 'Imagens', url: 'https://www.google.com/search?tbm=isch&q={}'}
+    ];
+
+    async function startAutomatedScan() {
+        let user = document.getElementById('targetUsername').value.trim();
+        if (!user) return alert("Por favor, insira um alvo!");
+
+        table.clear().draw();
+        $('#scanProgress').fadeIn();
+        const btn = $('#btnScan');
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-2"></i>VARRENDO...');
+
+        let openedCount = 0;
+
+        for (let i = 0; i < osintEngines.length; i++) {
+            const engine = osintEngines[i];
+            const finalUrl = engine.url.replace(/{}/g, encodeURIComponent(user));
+
+            // Tenta abrir a janela
+            const newWindow = window.open(finalUrl, '_blank', `width=${window.innerWidth > 900 ? 900 : window.innerWidth},height=700`);
+
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                console.warn(`Pop-up bloqueado para: ${engine.name}`);
+            } else {
+                openedCount++;
+            }
+
+            // Adiciona na tabela (sanitizado)
+            const safeName = $('<div>').text(engine.name).html();
+            table.row.add([
+                `<strong>${safeName}</strong>`,
+                `<span class="badge-cat">${engine.cat}</span>`,
+                `<span class="text-success"><i class="fa fa-check-circle"></i> Iniciada</span>`,
+                `<a href="${finalUrl}" target="_blank" class="btn btn-sm btn-outline-primary">Reabrir</a>`
+            ]).draw(false);
+
+            // Atualiza progresso
+            $('.progress-bar').css('width', ((i + 1) / osintEngines.length * 100) + '%');
+
+            // Delay para evitar bloqueio total de pop-ups
+            await new Promise(r => setTimeout(r, 420));
+        }
+        
+        btn.prop('disabled', false).html('<i class="fa fa-rocket mr-2"></i>VARREDURA MULTI-JANELA');
+        $('#btnExport').fadeIn();
+
+        if (openedCount < osintEngines.length) {
+            alert(`Varredura concluída!\n\n${openedCount} de ${osintEngines.length} janelas foram abertas.\nAlgumas podem ter sido bloqueadas pelo navegador.`);
+        } else {
+            alert(`Varredura concluída com sucesso! ${openedCount} fontes abertas.`);
+        }
+
+        lucide.createIcons();
+    }
+
+    function sentimentSearch(type) {
+        const user = document.getElementById('targetUsername').value.trim();
+        if (!user) return alert("Insira o alvo!");
+        const dork = type === 'pos' 
+            ? '(vitoria+OR+sucesso+OR+premio+OR+homenagem)' 
+            : '(crime+OR+processo+OR+fraude+OR+escandalo)';
+        window.open(`https://www.google.com/search?q="${encodeURIComponent(user)}"+${dork}`, '_blank', 'width=950,height=700');
+    }
+
+    function quickSearch(type) {
+        const user = document.getElementById('targetUsername').value.trim();
+        if (!user) return alert("Insira o alvo!");
+        
+        const urls = {
+            'jusbrasil': `https://www.jusbrasil.com.br/busca?q=${encodeURIComponent(user)}`,
+            'escavador': `https://www.escavador.com/busca?q=${encodeURIComponent(user)}`,
+            'instagram': `https://www.google.com/search?q=site:instagram.com "${encodeURIComponent(user)}"`,
+            'facebook': `https://www.google.com/search?q=site:facebook.com "${encodeURIComponent(user)}"`,
+            'social_all': `https://www.google.com/search?q="${encodeURIComponent(user)}"+(site:facebook.com+OR+site:instagram.com+OR+site:twitter.com)`,
+            'linkedin': `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(user)}`,
+            'images': `https://www.google.com/search?tbm=isch&q="${encodeURIComponent(user)}"`
+        };
+        window.open(urls[type], '_blank', 'width=950,height=700');
+    }
+
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const user = document.getElementById('targetUsername').value.trim() || "Desconhecido";
+
+        doc.text(`Relatório OSINT ZEUS - Alvo: ${user}`, 14, 20);
+        doc.autoTable({
+            startY: 30,
+            head: [['Fonte', 'Categoria', 'Status']],
+            body: osintEngines.map(e => [e.name, e.cat, 'Iniciado / Verificar manualmente']),
+            theme: 'grid',
+            styles: { fontSize: 10 }
+        });
+
+        doc.save(`OSINT_Report_${user.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+    }
+</script>
+</body>
+</html>
