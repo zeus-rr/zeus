@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OSINT ZEUS</title>
+	
+	<link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
     
     <link rel="icon" href="https://zeus-rr.github.io/osint/simbolo.ico" type="image/x-icon">
     
@@ -293,6 +296,11 @@
         });
 
         doc.save(`OSINT_Report_${user.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+		
+		/* SERVICE WORKER */
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+}
     }
 </script>
 </body>
